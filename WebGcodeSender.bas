@@ -161,6 +161,7 @@ if lof(#comm) <> 0  then
         if SendGcodeFlag = 1 then
             if t$ = "WAIT" then gosub [send.the.goce.to.the.printer]
             if t$ = "OK 0" then gosub [send.the.goce.to.the.printer]
+            if t$ = "RESEND:1" then gosub [REsend.the.goce.to.the.printer]
         else
             notice "Printing done. Click ok to continue"
             goto [loop.for.Gcode]
@@ -171,6 +172,8 @@ end if
 timer 10, [loop]
 wait
 
+[REsend.the.goce.to.the.printer]
+n = n - 1
 [send.the.goce.to.the.printer]
 n = n + 1
 if n > GcodeLinecount then SendGcodeFlag = 0: return
