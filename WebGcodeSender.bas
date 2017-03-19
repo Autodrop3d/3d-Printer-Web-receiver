@@ -12,7 +12,7 @@ if fileExists(DefaultDir$, "Settings.txt") then
         line input #PrinterSettings, printerBaud$    
         line input #PrinterSettings, printerName$    
         line input #PrinterSettings, printerMaterial$
-        line input #PrinterSettings, printerCollor$  
+        line input #PrinterSettings, printerColor$  
         line input #PrinterSettings, printerServer$
     close #PrinterSettings
 end if
@@ -70,7 +70,7 @@ goto [terminal.connect]
 
 
 
-print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&";"?material=";printerMaterial$;"&";"?collor=";printerCollor$)
+print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&";"?material=";printerMaterial$;"&";"?Color=";printerColor$)
 
 
 
@@ -130,7 +130,7 @@ wait
 [loop.for.Gcode]
     timer 0
     
-    print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&collor=";printerCollor$;"&material=";printerMaterial$)
+    print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&Color=";printerColor$;"&material=";printerMaterial$)
 
     open "download.gcode" for input as #autoexec
         print #esp8266.te, "!contents #autoexec";
