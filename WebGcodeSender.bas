@@ -2,6 +2,7 @@
 'print httpget$("http://libertybasic.com")
 
 
+PRINT shell$("wget http://makerspacemngsys.dev/auto3dprintqueue/12/gcode?mike=whao")
 Print "ESP8266basic.com"
 
 'DIM LIST.OF.COMM.PORTS$(255)
