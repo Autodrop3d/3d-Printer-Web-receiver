@@ -130,7 +130,7 @@ wait
 [loop.for.Gcode]
     timer 0
     
-    print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&Color=";printerColor$;"&material=";printerMaterial$)
+    print shell$("wget -O download.gcode ";chr$(34);printerServer$;"?name=";printerName$;"&Color=";printerColor$;"&material=";printerMaterial$;chr$(34))
 
     open "download.gcode" for input as #autoexec
         print #esp8266.te, "!contents #autoexec";
@@ -163,6 +163,10 @@ if lof(#comm) <> 0  then
             if t$ = "OK 0" then gosub [send.the.goce.to.the.printer]
             if t$ = "RESEND:1" then gosub [REsend.the.goce.to.the.printer]
         else
+            print  #esp8266.te, "!line 3 PrintJobID$" ;
+            PrintJobID$ = right$(PrintJobID$,len(PrintJobID$)-1)
+            print shell$("wget -O download.junk ";chr$(34);printerServer$;"?jobID=";PrintJobID$;"&stat=Done";chr$(34))
+        
             notice "Printing done. Click ok to continue"
             goto [loop.for.Gcode]
         end if 
