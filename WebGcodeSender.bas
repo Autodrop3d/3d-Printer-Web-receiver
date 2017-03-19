@@ -1,6 +1,7 @@
 'nomainwin
 'print httpget$("http://libertybasic.com")
 
+
 Print "ESP8266basic.com"
 
 'DIM LIST.OF.COMM.PORTS$(255)
@@ -36,10 +37,14 @@ on error goto [errorHandler]
     GRAPHICBOX #esp8266.indi, 255,   10, 25, 25
     textbox #esp8266.terminalsend,  255 + 25,   10, WindowWidth - 255 - 20-150 -25, 25
 
-    button #esp8266.connect,"connect",[terminal.connect], ul,  WindowWidth -20-150, 10 , 75, 25
+
     button #esp8266.connect,"Send",[terminal.send], ul,  WindowWidth -20-75, 10 , 75, 25
     
-    button #esp8266.LoadGcode,"Load Gcode",[load.gcode], ul,  10, 50 , 100, 25
+    
+    
+    button #esp8266.connect,"connect",[terminal.connect], ul,  10, 50 , 100, 25
+    
+    button #esp8266.LoadGcode,"Load Gcode",[load.gcode], ul,  10, 75 , 100, 25
     button #esp8266.LoadGcode,"Send Gcode",[send.gcode], ul,  10, 100 , 100, 25
        
     
@@ -74,12 +79,14 @@ open "test.gcode" for input as #autoexec
 print #esp8266.te, "!contents #autoexec";
 close #autoexec
 
+
 wait
 
 
 
 [send.gcode]
-notice "Send Gcode"
+print #esp8266.te, "!lines GcodeLinecount" ;
+n = 0
 SendGcodeFlag = 1
 wait
 
@@ -131,8 +138,10 @@ wait
 
 [send.the.goce.to.the.printer]
 n = n + 1
+if n > GcodeLinecount then SendGcodeFlag = 0: return
 print  #esp8266.te, "!line "+str$(n)+" GcodeLineToSend$" ;
 if left$(GcodeLineToSend$,1) = ";" then goto [send.the.goce.to.the.printer]
+if left$(GcodeLineToSend$,1) = "" then goto [send.the.goce.to.the.printer]
 print #esp8266.te, "!origin 0 ";n ;
 print #comm, GcodeLineToSend$ + chr$(13)
 return
