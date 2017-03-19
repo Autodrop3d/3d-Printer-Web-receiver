@@ -1,21 +1,27 @@
 'nomainwin
 'print httpget$("http://libertybasic.com")
 
+  dim info$(10, 10)
 
-PRINT shell$("wget http://makerspacemngsys.dev/auto3dprintqueue/12/gcode?mike=whao")
-Print "ESP8266basic.com"
 
-'DIM LIST.OF.COMM.PORTS$(255)
-'for x = 0 to 255
-'    LIST.OF.COMM.PORTS$(x) = x;""
-'next x
 
-dim port$(1000)
+if fileExists(DefaultDir$, "Settings.txt") then 
+
+    open "Settings.txt" for input as #PrinterSettings
+        line input #PrinterSettings, printerComPort$ 
+        line input #PrinterSettings, printerBaud$    
+        line input #PrinterSettings, printerName$    
+        line input #PrinterSettings, printerMaterial$
+        line input #PrinterSettings, printerCollor$  
+        line input #PrinterSettings, printerServer$
+    close #PrinterSettings
+end if
+
+
+
+
 
 oncomerror [trap]
-
-
-global comportopen
 
 on error goto [errorHandler]
 
@@ -31,9 +37,6 @@ on error goto [errorHandler]
     UpperLeftX=int((DisplayWidth-WindowWidth)/2)
     UpperLeftY=int((DisplayHeight-WindowHeight)/2)
 
-
-    statictext #esp8266.Port, "Comm", 10,  10,  67,  29
-    combobox #esp8266.comm, port$(), [SELECT.COM.PORT],  321-227,   10, 138, 100
 
     GRAPHICBOX #esp8266.indi, 255,   10, 25, 25
     textbox #esp8266.terminalsend,  255 + 25,   10, WindowWidth - 255 - 20-150 -25, 25
@@ -60,10 +63,14 @@ on error goto [errorHandler]
     print #esp8266.indi , "fill red"
 
 
-[esp8266.inputLoop]   'wait here for input event
+    
+
+goto [terminal.connect]
     wait
 
 
+
+print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&";"?material=";printerMaterial$;"&";"?collor=";printerCollor$)
 
 
 
@@ -94,7 +101,6 @@ wait
 
 
 [terminal.connect]
-print  #esp8266.comm, "contents? comm.port.number$"
 oncomerror [trap2]
 if connected = 1 then 
     timer 0
@@ -103,10 +109,11 @@ if connected = 1 then
     connected = 0 
     
 else 
-    open "COM" ; comm.port.number$ ; ":115200,n,8,1" for random as #comm
+    open "COM" ; printerComPort$ ; ":" ;printerBaud$; ",n,8,1" for random as #comm
     connected = 1
     print #esp8266.indi , "fill green"
-    timer 10, [loop]
+    timer 30000, [loop.for.Gcode]
+    goto [loop.for.Gcode]
 end if
 wait
 
@@ -120,6 +127,30 @@ print #comm, text$
 wait
 
 
+[loop.for.Gcode]
+    timer 0
+    
+    print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&collor=";printerCollor$;"&material=";printerMaterial$)
+
+    open "download.gcode" for input as #autoexec
+        print #esp8266.te, "!contents #autoexec";
+    close #autoexec
+    
+    print  #esp8266.te, "!line 1 gcodetest$" ;
+    
+    if gcodetest$ = ";start" then 
+        print #esp8266.te, "!lines GcodeLinecount" ;
+        n = 0
+        SendGcodeFlag = 1
+        timer 0
+        goto [loop]
+        
+    end if
+    
+    timer 30000, [loop.for.Gcode]
+wait
+
+
 [loop]
 timer 0
 if lof(#comm) <> 0  then 
@@ -130,6 +161,9 @@ if lof(#comm) <> 0  then
         if SendGcodeFlag = 1 then
             if t$ = "WAIT" then gosub [send.the.goce.to.the.printer]
             if t$ = "OK 0" then gosub [send.the.goce.to.the.printer]
+        else
+            notice "Printing done. Click ok to continue"
+            goto [loop.for.Gcode]
         end if 
         t$ = ""
     end if
@@ -316,18 +350,25 @@ end function
 
 
 function loadfile$(file.location$)
+  
     	open file.location$ for input as #jjjj
 
         	loadfile$ = Input$(#jjjj, LOF(#jjjj))
 
     	close #jjjj
+
 end function 
 
 
 
 
 
-
+function fileExists(path$, filename$)
+  'dimension the array info$( at the beginning of your program
+  files path$, filename$, info$()
+  fileExists = val(info$(0, 0))  'non zero is true
+end function
+ 
 
 
 
