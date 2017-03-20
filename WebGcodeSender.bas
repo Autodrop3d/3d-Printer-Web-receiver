@@ -46,18 +46,18 @@ on error goto [errorHandler]
     
     
     
-    button #esp8266.connect,"connect",[terminal.connect], ul,  10, 50 , 100, 25
+    button #esp8266.connect,"connect",[terminal.connect], ul,  10, 10 , 200, 95
     
-    button #esp8266.LoadGcode,"Load Gcode",[load.gcode], ul,  10, 75 , 100, 25
-    button #esp8266.LoadGcode,"Send Gcode",[send.gcode], ul,  10, 100 , 100, 25
+    button #esp8266.LoadGcode,"Pause Print",[Pause.print], ul,  10, 110 , 200, 95
+    button #esp8266.LoadGcode,"Send Gcode",[send.gcode], ul,  10, 210 , 200, 95
        
     
     
     
-    texteditor #esp8266.te, 255, 35, WindowWidth - 255 - 20, WindowHeight - 35 - 35     'The handle for our texteditor is #window.te
+    texteditor #esp8266.te, 255, 35, WindowWidth - 255 - 20, WindowHeight - 35 - 35 -50    'The handle for our texteditor is #window.te
 
-    open "ESP8266 Basic by ESP8266basic.com" for dialog_nf as #esp8266
-    print #esp8266, "font ms_sans_serif 10"
+    open "ESP8266 Basic by ESP8266basic.com" for window as #esp8266
+    print #esp8266, "font courier_new 16"
     print #esp8266, "trapclose [quit.esp8266]"
     print #esp8266.te, "!autoresize";   'Tell the texteditor to resize with the terminal window
     print #esp8266.indi , "fill red"
@@ -80,15 +80,12 @@ print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&";
 
 
 
+[Pause.print]
+if SendGcodeFlag = 1 then SendGcodeFlag = 0 else SendGcodeFlag = 1
+goto [loop.for.Gcode]
 
 
-[load.gcode]
-open "test.gcode" for input as #autoexec
-print #esp8266.te, "!contents #autoexec";
-close #autoexec
 
-
-wait
 
 
 
@@ -129,6 +126,7 @@ wait
 
 [loop.for.Gcode]
     timer 0
+    if SendGcodeFlag = 1 then goto [loop]
     
     print shell$("wget -O download.gcode ";chr$(34);printerServer$;"?name=";printerName$;"&Color=";printerColor$;"&material=";printerMaterial$;chr$(34))
 
@@ -137,6 +135,7 @@ wait
     close #autoexec
     
     print  #esp8266.te, "!line 1 gcodetest$" ;
+    
     
     if gcodetest$ = ";start" then 
         print #esp8266.te, "!lines GcodeLinecount" ;
@@ -166,7 +165,7 @@ if lof(#comm) <> 0  then
             print  #esp8266.te, "!line 3 PrintJobID$" ;
             PrintJobID$ = right$(PrintJobID$,len(PrintJobID$)-1)
             print shell$("wget -O download.junk ";chr$(34);printerServer$;"?jobID=";PrintJobID$;"&stat=Done";chr$(34))
-        
+            SendGcodeFlag = 0
             notice "Printing done. Click ok to continue"
             goto [loop.for.Gcode]
         end if 
