@@ -10,7 +10,7 @@ if fileExists(DefaultDir$, "Settings.txt") then
     open "Settings.txt" for input as #PrinterSettings
         line input #PrinterSettings, printerComPort$ 
         line input #PrinterSettings, printerBaud$    
-        line input #PrinterSettings, printerName$    
+        line input #PrinterSettings, printerNamea$    
         line input #PrinterSettings, printerMaterial$
         line input #PrinterSettings, printerColor$  
         line input #PrinterSettings, printerServer$
@@ -18,6 +18,13 @@ if fileExists(DefaultDir$, "Settings.txt") then
 end if
 
 
+
+printerComPort$ = trim$(printerComPort$)
+printerBaud$    = trim$(printerBaud$)
+printerNamea$    = trim$(printerNamea$)
+printerMaterial$= trim$(printerMaterial$)
+printerColor$   = trim$(printerColor$)
+printerServer$  = trim$(printerServer$)
 
 
 
@@ -70,7 +77,7 @@ goto [terminal.connect]
 
 
 
-print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&";"?material=";printerMaterial$;"&";"?Color=";printerColor$)
+print shell$("wget -O download.gcode ";printerServer$;"?name=";printerNamea$;"&";"?material=";printerMaterial$;"&";"?Color=";printerColor$)
 
 
 
@@ -81,7 +88,7 @@ print shell$("wget -O download.gcode ";printerServer$;"?name=";printerName$;"&";
 
 
 [Pause.print]
-if SendGcodeFlag = 1 then SendGcodeFlag = 0 else SendGcodeFlag = 1
+if printPaused = 0 then printPaused = 1 else printPaused = 0
 goto [loop.for.Gcode]
 
 
@@ -128,7 +135,7 @@ wait
     timer 0
     if SendGcodeFlag = 1 then goto [loop]
     
-    print shell$("wget -O download.gcode ";chr$(34);printerServer$;"?name=";printerName$;"&Color=";printerColor$;"&material=";printerMaterial$;chr$(34))
+    print shell$("wget -O download.gcode ";chr$(34);printerServer$;"?name=";printerNamea$;"&Color=";printerColor$;"&material=";printerMaterial$;chr$(34))
 
     open "download.gcode" for input as #autoexec
         print #esp8266.te, "!contents #autoexec";
@@ -138,6 +145,16 @@ wait
     
     
     if gcodetest$ = ";start" then 
+    
+    
+        'a Bit of code to print out a page to the default printer
+        for xxxxxx = 1 to 10
+            print  #esp8266.te, "!line ";xxxxxx;" gcodetest$" ;
+            lprint gcodetest$
+        next xxxxxx 
+        dump
+    
+    
         print #esp8266.te, "!lines GcodeLinecount" ;
         n = 0
         SendGcodeFlag = 1
@@ -157,18 +174,21 @@ if lof(#comm) <> 0  then
     if right$(t$,1) = chr$(10) then 
         t$ = upper$(trim$(t$))
         print t$
-        if SendGcodeFlag = 1 then
-            if t$ = "WAIT" then gosub [send.the.goce.to.the.printer]
-            if t$ = "OK 0" then gosub [send.the.goce.to.the.printer]
-            if t$ = "RESEND:1" then gosub [REsend.the.goce.to.the.printer]
-        else
-            print  #esp8266.te, "!line 3 PrintJobID$" ;
-            PrintJobID$ = right$(PrintJobID$,len(PrintJobID$)-1)
-            print shell$("wget -O download.junk ";chr$(34);printerServer$;"?jobID=";PrintJobID$;"&stat=Done";chr$(34))
-            SendGcodeFlag = 0
-            notice "Printing done. Click ok to continue"
-            goto [loop.for.Gcode]
-        end if 
+        if printPaused = 0 then
+        
+            if SendGcodeFlag = 1 then
+                if t$ = "WAIT" then gosub [send.the.goce.to.the.printer]
+                if t$ = "OK 0" then gosub [send.the.goce.to.the.printer]
+                if t$ = "RESEND:1" then gosub [REsend.the.goce.to.the.printer]
+            else
+                print  #esp8266.te, "!line 3 PrintJobID$" ;
+                PrintJobID$ = right$(PrintJobID$,len(PrintJobID$)-1)
+                print shell$("wget -O download.junk ";chr$(34);printerServer$;"?jobID=";PrintJobID$;"&stat=Done";chr$(34))
+                SendGcodeFlag = 0
+                'notice "Printing done. Click ok to continue"
+                goto [loop.for.Gcode]
+            end if 
+        end if
         t$ = ""
     end if
 end if

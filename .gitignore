@@ -1,2 +1,5 @@
 download.gcode
 *.gcode
+*.gcode
+*.junk
+*.gcode

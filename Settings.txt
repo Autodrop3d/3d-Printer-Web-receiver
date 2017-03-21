@@ -1,6 +1,14 @@
 10
+
 115200
+
 Tronxy
+
 PLA
+
 SILVER
+
 http://makerspacemngsys.dev/printerinterface/gcode
+
+
+
