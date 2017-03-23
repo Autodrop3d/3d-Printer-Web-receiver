@@ -146,15 +146,6 @@ wait
     
     if gcodetest$ = ";start" then 
     
-    
-        'a Bit of code to print out a page to the default printer
-        for xxxxxx = 1 to 10
-            print  #esp8266.te, "!line ";xxxxxx;" gcodetest$" ;
-            lprint gcodetest$
-        next xxxxxx 
-        dump
-    
-    
         print #esp8266.te, "!lines GcodeLinecount" ;
         n = 0
         SendGcodeFlag = 1
@@ -201,8 +192,23 @@ n = n - 1
 n = n + 1
 if n > GcodeLinecount then SendGcodeFlag = 0: return
 print  #esp8266.te, "!line "+str$(n)+" GcodeLineToSend$" ;
+
+
+if left$(GcodeLineToSend$,10) = ";printpage" then
+'a Bit of code to print out a page to the default printer
+    for xxxxxx = 1 to 10
+        print  #esp8266.te, "!line ";xxxxxx;" gcodetest$" ;
+        lprint gcodetest$
+    next xxxxxx 
+    dump
+    bla = pauseme( 20000 )
+end if
+
+
 if left$(GcodeLineToSend$,1) = ";" then goto [send.the.goce.to.the.printer]
 if left$(GcodeLineToSend$,1) = "" then goto [send.the.goce.to.the.printer]
+
+
 print #esp8266.te, "!origin 0 ";n ;
 print #comm, GcodeLineToSend$ + chr$(13)
 return
@@ -271,8 +277,7 @@ end function
 
 
 
-
-function pause( mil)
+function pauseme( mil)
     t0=time$("ms")
     while time$("ms")<t0+mil
         scan
