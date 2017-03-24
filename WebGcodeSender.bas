@@ -172,6 +172,7 @@ if lof(#comm) <> 0  then
                 if t$ = "OK 0" then gosub [send.the.goce.to.the.printer]
                 if t$ = "RESEND:1" then gosub [REsend.the.goce.to.the.printer]
             else
+                
                 print  #esp8266.te, "!line 3 PrintJobID$" ;
                 PrintJobID$ = right$(PrintJobID$,len(PrintJobID$)-1)
                 print shell$("wget -O download.junk ";chr$(34);printerServer$;"?jobID=";PrintJobID$;"&stat=Done";chr$(34))
@@ -195,13 +196,14 @@ print  #esp8266.te, "!line "+str$(n)+" GcodeLineToSend$" ;
 
 
 if left$(GcodeLineToSend$,10) = ";printpage" then
+    bla = pauseme( 60000 )
 'a Bit of code to print out a page to the default printer
     for xxxxxx = 1 to 10
         print  #esp8266.te, "!line ";xxxxxx;" gcodetest$" ;
         lprint gcodetest$
     next xxxxxx 
     dump
-    bla = pauseme( 20000 )
+    bla = pauseme( 30000 )
 end if
 
 
