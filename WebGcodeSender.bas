@@ -196,7 +196,7 @@ print  #esp8266.te, "!line "+str$(n)+" GcodeLineToSend$" ;
 
 
 if left$(GcodeLineToSend$,10) = ";printpage" then
-    bla = pauseme( 60000 )
+    bla = pauseme( 10 )
 'a Bit of code to print out a page to the default printer
     for xxxxxx = 1 to 10
         print  #esp8266.te, "!line ";xxxxxx;" gcodetest$" ;
