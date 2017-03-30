@@ -4,3 +4,4 @@ download.gcode
 *.junk
 *.gcode
 *.gcode
+Settings.txt

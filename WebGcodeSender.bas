@@ -4,6 +4,19 @@
   dim info$(10, 10)
 
 
+dim SettingsList$(6)
+dim SettingsListValues$(6)
+
+
+
+SettingsList$(1) = "Com Port number"
+SettingsList$(2) = "Baud Speed"    
+SettingsList$(3) = "printer Name"
+SettingsList$(4) = "Material"
+SettingsList$(5) = "Color"
+SettingsList$(6) = "Server"
+
+
 
 if fileExists(DefaultDir$, "Settings.txt") then 
 
@@ -15,13 +28,19 @@ if fileExists(DefaultDir$, "Settings.txt") then
         line input #PrinterSettings, printerColor$  
         line input #PrinterSettings, printerServer$
     close #PrinterSettings
+    
+    
+    
+
+else 
+    goto [MySettings.Window]
 end if
 
 
 
 printerComPort$ = trim$(printerComPort$)
 printerBaud$    = trim$(printerBaud$)
-printerNamea$    = trim$(printerNamea$)
+printerNamea$   = trim$(printerNamea$)
 printerMaterial$= trim$(printerMaterial$)
 printerColor$   = trim$(printerColor$)
 printerServer$  = trim$(printerServer$)
@@ -45,8 +64,8 @@ on error goto [errorHandler]
     UpperLeftY=int((DisplayHeight-WindowHeight)/2)
 
 
-    GRAPHICBOX #esp8266.indi, 255,   10, 25, 25
-    textbox #esp8266.terminalsend,  255 + 25,   10, WindowWidth - 255 - 20-150 -25, 25
+    GRAPHICBOX #esp8266.indi, 255,   10, 25, 45
+    textbox #esp8266.terminalsend,  255 + 25,   10, WindowWidth - 255 - 20-150 -25, 45
 
 
     button #esp8266.connect,"Send",[terminal.send], ul,  WindowWidth -20-75, 10 , 75, 25
@@ -58,10 +77,10 @@ on error goto [errorHandler]
     button #esp8266.LoadGcode,"Pause Print",[Pause.print], ul,  10, 110 , 200, 95
     button #esp8266.LoadGcode,"Send Gcode",[send.gcode], ul,  10, 210 , 200, 95
        
+    button #esp8266.settings,"Settings",[MySettings.Window], ul,  10, 310 , 200, 95
     
     
-    
-    texteditor #esp8266.te, 255, 35, WindowWidth - 255 - 20, WindowHeight - 35 - 35 -50    'The handle for our texteditor is #window.te
+    texteditor #esp8266.te, 255, 60, WindowWidth - 255 - 20, WindowHeight - 50 - 35 -65    'The handle for our texteditor is #window.te
 
     open "ESP8266 Basic by ESP8266basic.com" for window as #esp8266
     print #esp8266, "font courier_new 16"
@@ -240,13 +259,56 @@ print "Error number is ";Err
 wait
 
 
+[MySettings.Window]
+
+    SettingsListValues$(1) = printerComPort$ 
+    SettingsListValues$(2) = printerBaud$    
+    SettingsListValues$(3) = printerNamea$    
+    SettingsListValues$(4) = printerMaterial$
+    SettingsListValues$(5) = printerColor$  
+    SettingsListValues$(6) = printerServer$
+    
+    for x = 1 to 6
+        if SettingsListValues$(x) = "" then SettingsListValues$(x) = "unset"
+    
+    next x
+
+'include SettingsDialog.inc
+print #MySettings, "trapclose [mysettings.cancel]"
+
+wait
 
 
 
 
+[Setting.Select.edit]
+print #MySettings.SettingsListValues, "selectionindex? index"
+goto [settings.edit.index.value]
+
+[Setting.Select]
+print #MySettings.Selection, "selectionindex? index"
+goto [settings.edit.index.value]
+
+[settings.edit.index.value]
+prompt "Enter New Value";SettingsListValues$(index)
+if SettingsListValues$(index) = "" then SettingsListValues$(index) = "unset"
+print #MySettings.SettingsListValues, "reload"
+wait
 
 
+[mysettings.save]
+    open "Settings.txt" for output as #PrinterSettings
+        for x = 1 to 6
+            print #PrinterSettings, SettingsListValues$(x)
+        next x
+    close #PrinterSettings
+    
+    close #MySettings
+WAIT
 
+[mysettings.cancel]
+    close #MySettings
+WAIT
 
 
 '-------------------------Functions ---------------------------------------------------------
