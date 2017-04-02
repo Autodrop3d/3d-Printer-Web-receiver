@@ -372,7 +372,7 @@ function ReplaceString$(ere$,repl$,in$,occ$,pos)
 
 '       string .......... string to be parsed
 
-'       occurrances ..... ALL -> replaces all occurrances
+'       occurrences ..... ALL -> replaces all occurrences
 
 '                         else the specified number
 
