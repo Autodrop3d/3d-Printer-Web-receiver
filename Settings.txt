@@ -1,5 +1,5 @@
-11
-115200
+6
+250000
 Tronxy
 PLA
 SILVER

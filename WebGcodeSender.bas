@@ -189,6 +189,7 @@ if lof(#comm) <> 0  then
             if SendGcodeFlag = 1 then
                 if t$ = "WAIT" then gosub [send.the.goce.to.the.printer]
                 if t$ = "OK 0" then gosub [send.the.goce.to.the.printer]
+                if t$ = "OK" then gosub [send.the.goce.to.the.printer]
                 if t$ = "RESEND:1" then gosub [REsend.the.goce.to.the.printer]
             else
                 
