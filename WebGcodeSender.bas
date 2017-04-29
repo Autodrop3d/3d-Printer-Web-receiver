@@ -211,16 +211,7 @@ wait
 n = n - 1
 [send.the.goce.to.the.printer]
 n = n + 1
-if n > GcodeLinecount then 
-    SendGcodeFlag = 0
-    
-    print #esp8266.indi , "fill red"
-    close #comm
-    open "COM" ; printerComPort$ ; ":" ;printerBaud$; ",n,8,1" for random as #comm
-    print #esp8266.indi , "fill green"
-    return
-    
-END IF
+if n > GcodeLinecount then SendGcodeFlag = 0: RETURN
 print  #esp8266.te, "!line "+str$(n)+" GcodeLineToSend$" ;
 
 

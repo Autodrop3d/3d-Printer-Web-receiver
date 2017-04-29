@@ -1,6 +1,6 @@
-6
+5
 250000
-Tronxy
+TRONXY
 PLA
-SILVER
-http://makerspacemngsys.dev/printerinterface/gcode
+WHITE
+http://87E5081D.ngrok.io/printerinterface/gcode
