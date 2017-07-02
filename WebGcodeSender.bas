@@ -1,11 +1,11 @@
-'nomainwin
-'print httpget$("http://libertybasic.com")
 
-  dim info$(10, 10)
+[top]
+
+dim info$(10, 10)
 
 
-dim SettingsList$(6)
-dim SettingsListValues$(6)
+dim SettingsList$(7)
+dim SettingsListValues$(7)
 
 
 
@@ -15,7 +15,7 @@ SettingsList$(3) = "printer Name"
 SettingsList$(4) = "Material"
 SettingsList$(5) = "Color"
 SettingsList$(6) = "Server"
-
+SettingsList$(7) = "Pause After Print"
 
 
 if fileExists(DefaultDir$, "Settings.txt") then 
@@ -27,6 +27,7 @@ if fileExists(DefaultDir$, "Settings.txt") then
         line input #PrinterSettings, printerMaterial$
         line input #PrinterSettings, printerColor$  
         line input #PrinterSettings, printerServer$
+        line input #PrinterSettings, printerPauseAfterJob$
     close #PrinterSettings
     
     
@@ -38,13 +39,13 @@ end if
 
 
 
-printerComPort$ = trim$(printerComPort$)
-printerBaud$    = trim$(printerBaud$)
-printerNamea$   = trim$(printerNamea$)
-printerMaterial$= trim$(printerMaterial$)
-printerColor$   = trim$(printerColor$)
-printerServer$  = trim$(printerServer$)
-
+printerComPort$       = trim$(printerComPort$)
+printerBaud$          = trim$(printerBaud$)
+printerNamea$         = trim$(printerNamea$)
+printerMaterial$      = trim$(printerMaterial$)
+printerColor$         = trim$(printerColor$)
+printerServer$        = trim$(printerServer$)
+printerPauseAfterJob$ = trim$(printerPauseAfterJob$)
 
 
 oncomerror [trap]
@@ -58,8 +59,8 @@ on error goto [errorHandler]
     '-----Begin code for #esp8266
 
 
-    WindowWidth = 900
-    WindowHeight = 650
+    WindowWidth = DisplayWidth - 20
+    WindowHeight = DisplayHeight - 50
     UpperLeftX=int((DisplayWidth-WindowWidth)/2)
     UpperLeftY=int((DisplayHeight-WindowHeight)/2)
 
@@ -82,7 +83,7 @@ on error goto [errorHandler]
     
     texteditor #esp8266.te, 255, 60, WindowWidth - 255 - 20, WindowHeight - 50 - 35 -65    'The handle for our texteditor is #window.te
 
-    open "ESP8266 Basic by ESP8266basic.com" for window as #esp8266
+    open "3d Printer Web GCODE sender" for window as #esp8266
     print #esp8266, "font courier_new 16"
     print #esp8266, "trapclose [quit.esp8266]"
     print #esp8266.te, "!autoresize";   'Tell the texteditor to resize with the terminal window
@@ -96,7 +97,6 @@ goto [terminal.connect]
 
 
 
-print shell$("wget -O download.gcode ";printerServer$;"?name=";printerNamea$;"&";"?material=";printerMaterial$;"&";"?Color=";printerColor$)
 
 
 
@@ -155,22 +155,44 @@ wait
     if SendGcodeFlag = 1 then goto [loop]
     
     print shell$("wget -O download.gcode ";chr$(34);printerServer$;"?name=";printerNamea$;"&Color=";printerColor$;"&material=";printerMaterial$;chr$(34))
+    
+    downloadedGcode$ = loadfile$("download.gcode")
+    if INSTR(downloadedGcode$, ";start") > 0 then 
+        
+        print #esp8266.te, "!cls"
+        
+        print #esp8266.te, loadfile$("start.gcode")
+        
+        print #esp8266.te, downloadedGcode$
+        
+        print #esp8266.te, loadfile$("end.gcode")
 
-    open "download.gcode" for input as #autoexec
-        print #esp8266.te, "!contents #autoexec";
-    close #autoexec
-    
-    print  #esp8266.te, "!line 1 gcodetest$" ;
-    
-    
-    if gcodetest$ = ";start" then 
-    
         print #esp8266.te, "!lines GcodeLinecount" ;
         n = 0
         SendGcodeFlag = 1
         timer 0
-        goto [loop]
         
+        
+        WindowWidth = 200
+        WindowHeight = 200
+        open "Retrieve Job details" for text as #paperPrinterWindow
+            print #paperPrinterWindow, downloadedGcode$
+            print #paperPrinterWindow, "!line 3 PrintJobID$" ;
+
+            bla = pauseme( 10 )
+            'Gets the commnet lines to print
+            dim printComments$(10)
+            for xxxxxx = 2 to 10
+                print  #paperPrinterWindow, "!line ";xxxxxx;" gcodetest$" ;
+                printComments$(xxxxxx) = gcodetest$
+            next xxxxxx 
+    
+        close #paperPrinterWindow
+
+        goto [loop]
+
+    else
+        print #esp8266.te, downloadedGcode$ 
     end if
     
     timer 30000, [loop.for.Gcode]
@@ -192,12 +214,10 @@ if lof(#comm) <> 0  then
                 if t$ = "OK" then gosub [send.the.goce.to.the.printer]
                 if t$ = "RESEND:1" then gosub [REsend.the.goce.to.the.printer]
             else
-                
-                print  #esp8266.te, "!line 3 PrintJobID$" ;
                 PrintJobID$ = right$(PrintJobID$,len(PrintJobID$)-1)
                 print shell$("wget -O download.junk ";chr$(34);printerServer$;"?jobID=";PrintJobID$;"&stat=Done";chr$(34))
                 SendGcodeFlag = 0
-                'notice "Printing done. Click ok to continue"
+                if upper$(printerPauseAfterJob$) = "TRUE" THEN notice "Printing done. Click ok to continue"
                 goto [loop.for.Gcode]
             end if 
         end if
@@ -217,12 +237,12 @@ print  #esp8266.te, "!line "+str$(n)+" GcodeLineToSend$" ;
 
 if left$(GcodeLineToSend$,10) = ";printpage" then
     bla = pauseme( 10 )
-'a Bit of code to print out a page to the default printer
-    for xxxxxx = 1 to 10
-        print  #esp8266.te, "!line ";xxxxxx;" gcodetest$" ;
-        lprint gcodetest$
-    next xxxxxx 
+    'a Bit of code to print out a page to the default printer
+    for xxxxxx = 2 to 10
+        lprint printComments$(xxxxxx)
+    next xxxxxx  
     dump
+    
     bla = pauseme( 30000 )
 end if
 
@@ -236,24 +256,19 @@ print #comm, GcodeLineToSend$ + chr$(13)
 return
 
 
-[trap2]
-print #esp8266.indi , "fill red"
-close #comm
-print "error"
+[errorHandler]
 wait
 
- 
- 
- 
- 
+[trap2]
 [trap]
-[errorHandler]
-if connected = 1 then 
+
+
     timer 0
     print #esp8266.indi , "fill red"
     close #comm
     connected = 0 
-end if
+notice "there was an error"
+
 print "Error string is " + chr$(34) + Err$ + chr$(34)
 print "Error number is ";Err
 
@@ -268,14 +283,20 @@ wait
     SettingsListValues$(4) = printerMaterial$
     SettingsListValues$(5) = printerColor$  
     SettingsListValues$(6) = printerServer$
+    SettingsListValues$(7) = printerPauseAfterJob$
     
-    for x = 1 to 6
+    for x = 1 to 7
         if SettingsListValues$(x) = "" then SettingsListValues$(x) = "unset"
     
     next x
 
 'include SettingsDialog.inc
 print #MySettings, "trapclose [mysettings.cancel]"
+
+print #MySettings.StartGcode, loadfile$("start.gcode")
+print #MySettings.EndGcode,  loadfile$("end.gcode")
+
+
 
 wait
 
@@ -291,15 +312,24 @@ print #MySettings.Selection, "selectionindex? index"
 goto [settings.edit.index.value]
 
 [settings.edit.index.value]
-prompt "Enter New Value";SettingsListValues$(index)
-if SettingsListValues$(index) = "" then SettingsListValues$(index) = "unset"
+if index = 0 then wait
+newSettingValue$ = SettingsListValues$(index)
+prompt "Enter New Value";newSettingValue$
+if newSettingValue$ = "" then wait
+SettingsListValues$(index) =  newSettingValue$
 print #MySettings.SettingsListValues, "reload"
 wait
 
 
 [mysettings.save]
+    print #MySettings.StartGcode, "!contents? bla$";
+    bla$ = savefile$("start.gcode",bla$)
+
+    print #MySettings.EndGcode, "!contents? bla$";
+    bla$ = savefile$("end.gcode", bla$)
+
     open "Settings.txt" for output as #PrinterSettings
-        for x = 1 to 6
+        for x = 1 to 7
             print #PrinterSettings, SettingsListValues$(x)
         next x
     close #PrinterSettings
@@ -428,9 +458,6 @@ end function
 
 
 
-
-
-
 function savefile$(file.location$,stuff.to.write$)
 
     open file.location$ for output as #jjjj
@@ -458,16 +485,8 @@ end function
 
 
 
-
 function fileExists(path$, filename$)
   'dimension the array info$( at the beginning of your program
   files path$, filename$, info$()
   fileExists = val(info$(0, 0))  'non zero is true
 end function
- 
-
-
-
-
-
-

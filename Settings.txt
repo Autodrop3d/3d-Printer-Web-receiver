@@ -3,4 +3,5 @@
 TRONXY
 PLA
 WHITE
-http://87E5081D.ngrok.io/printerinterface/gcode
+http://makerspacemngsys.dev/printerinterface/gcode
+false

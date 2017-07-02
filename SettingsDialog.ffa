@@ -1,15 +1,15 @@
 black
 buttonface
-8
+12
 Settings
-dialog_modal
-6
+dialog
+10
 #MySettings
 0
 0
 0
-0
-533
+1
+1123
 449
 
 
@@ -31,7 +31,7 @@ Selection
 273
 
 [Setting.Select]
-0
+6
 
 
 
@@ -49,7 +49,7 @@ statictext5
 27
 
 [Setting.Select.edit]
-0
+7
 
 
 
@@ -67,7 +67,7 @@ SettingsListValues
 273
 
 [Setting.Select.edit]
-0
+8
 
 
 
@@ -85,7 +85,7 @@ button7
 87
 UL
 [mysettings.save]
-0
+9
 
 
 
@@ -103,7 +103,79 @@ button5
 87
 UL
 [mysettings.cancel]
-0
+10
+
+
+
+
+
+white
+ms_sans_serif 10
+
+textedit
+n/a
+StartGcode
+530
+139
+575
+150
+
+[]
+4
+
+
+
+
+
+white
+ms_sans_serif 10
+
+textedit
+n/a
+EndGcode
+529
+330
+575
+150
+
+[]
+5
+
+
+
+
+
+white
+ms_sans_serif 10
+
+statictext
+Start GCODE
+statictext11
+529
+112
+577
+20
+
+
+11
+
+
+
+
+
+white
+ms_sans_serif 10
+
+statictext
+End Gcode
+statictext9
+529
+302
+577
+20
+
+[]
+12
 
 
 
@@ -137,3 +209,5 @@ ms_sans_serif 10
  
  
  
+Edit
+0

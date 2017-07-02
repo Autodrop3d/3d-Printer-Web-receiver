@@ -1,0 +1,2 @@
+See the following for source code and licence for command cam. 
+https://github.com/tedburke/CommandCam
