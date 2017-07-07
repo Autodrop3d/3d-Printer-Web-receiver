@@ -1,7 +1,7 @@
-5
+7
 250000
-TRONXY
+KOSSEL
 PLA
 WHITE
-http://makerspacemngsys.dev/printerinterface/gcode
+http://AUTODROP3D.COM/printerinterface/gcode
 false

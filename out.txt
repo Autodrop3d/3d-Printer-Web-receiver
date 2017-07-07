@@ -1,3 +1,31 @@
+G28
+;DOWN ALL THE WAY 
+M340 P0 S1700
+G4 P30000
+M340 P0 S1200
+
+;ALL THE WAY UP
+M340 P0 S900
+G4 P31000
+M340 P0 S1500
+
+;DOWN FOR THE PRINTER PAGE
+M340 P0 S1700
+G4 P4000
+M340 P0 S1200
+
+
+;printpage
+
+;ALL THE WAY UP
+M340 P0 S900
+G4 P7000
+M340 P0 S1500
+
+
+
+
+
 ;start
 ;Print id is
 ;68
@@ -13625,3 +13653,13 @@ M107
 ; top_infill_extrusion_width = 0
 ; top_solid_infill_speed = 15
 ; top_solid_layers = 5
+;DOWN ALL THE WAY 
+M340 P0 S1700
+G4 P22000
+M340 P0 S1200
+
+
+
+
+
+

@@ -155,39 +155,45 @@ wait
     if SendGcodeFlag = 1 then goto [loop]
     
     print shell$("wget -O download.gcode ";chr$(34);printerServer$;"?name=";printerNamea$;"&Color=";printerColor$;"&material=";printerMaterial$;chr$(34))
+
+        open "download.gcode" for input as #mytemfile
+            print #esp8266.te, "!contents #mytemfile";
+        close #mytemfile   
     
-    downloadedGcode$ = loadfile$("download.gcode")
+    print #esp8266.te, "!line 1 downloadedGcode$" ;
+
+    dim printComments$(10)
+    for xxxxxx = 2 to 10
+        print  #esp8266.te, "!line ";xxxxxx;" gcodetest$" ;
+        printComments$(xxxxxx) = gcodetest$
+    next xxxxxx 
+
+'notice "File downloaed and shwn"
+
+
     if INSTR(downloadedGcode$, ";start") > 0 then 
         
         print #esp8266.te, "!cls"
         
-        print #esp8266.te, loadfile$("start.gcode")
-        
-        print #esp8266.te, downloadedGcode$
-        
-        print #esp8266.te, loadfile$("end.gcode")
+
+        bla$ = shell$("combine.bat")
+
+        '     cat start.gcode download.gcode end.gcode > out.txt
+
+        'notice "Concatination done"
+
+        open "out.txt" for input as #mytemfile
+            print #esp8266.te, "!contents #mytemfile";
+        close #mytemfile
 
         print #esp8266.te, "!lines GcodeLinecount" ;
+
+
+
+
         n = 0
         SendGcodeFlag = 1
         timer 0
-        
-        
-        WindowWidth = 200
-        WindowHeight = 200
-        open "Retrieve Job details" for text as #paperPrinterWindow
-            print #paperPrinterWindow, downloadedGcode$
-            print #paperPrinterWindow, "!line 3 PrintJobID$" ;
-
-            bla = pauseme( 10 )
-            'Gets the commnet lines to print
-            dim printComments$(10)
-            for xxxxxx = 2 to 10
-                print  #paperPrinterWindow, "!line ";xxxxxx;" gcodetest$" ;
-                printComments$(xxxxxx) = gcodetest$
-            next xxxxxx 
-    
-        close #paperPrinterWindow
 
         goto [loop]
 
@@ -210,6 +216,7 @@ if lof(#comm) <> 0  then
         
             if SendGcodeFlag = 1 then
                 if t$ = "WAIT" then gosub [send.the.goce.to.the.printer]
+                if INSTR("  ";t$, "FANSPEED") > 0 then gosub [send.the.goce.to.the.printer]
                 if t$ = "OK 0" then gosub [send.the.goce.to.the.printer]
                 if t$ = "OK" then gosub [send.the.goce.to.the.printer]
                 if t$ = "RESEND:1" then gosub [REsend.the.goce.to.the.printer]
@@ -473,7 +480,8 @@ end function
 
 
 function loadfile$(file.location$)
-  
+
+ 
     	open file.location$ for input as #jjjj
 
         	loadfile$ = Input$(#jjjj, LOF(#jjjj))
@@ -490,3 +498,9 @@ function fileExists(path$, filename$)
   files path$, filename$, info$()
   fileExists = val(info$(0, 0))  'non zero is true
 end function
+
+
+
+
+
+ 
