@@ -161,6 +161,8 @@ wait
         close #mytemfile   
     
     print #esp8266.te, "!line 1 downloadedGcode$" ;
+    
+
 
     dim printComments$(10)
     for xxxxxx = 2 to 10
@@ -174,6 +176,7 @@ wait
 
 
     if INSTR(downloadedGcode$, ";start") > 0 then 
+        print #esp8266.te, "!line 3 PrintJobID$" ;
         
         print #esp8266.te, "!cls"
         
