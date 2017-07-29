@@ -1,11 +1,12 @@
-
+    open "WS2_32" for DLL as #winsock
+    
 [top]
 
 dim info$(10, 10)
 
 
-dim SettingsList$(10)
-dim SettingsListValues$(10)
+dim SettingsList$(11)
+dim SettingsListValues$(11)
 
 
 
@@ -19,6 +20,7 @@ SettingsList$(7)  = "Pause After Print"
 SettingsList$(8)  = "Size X"
 SettingsList$(9)  = "Size Y"
 SettingsList$(10) = "Size Z"
+SettingsList$(11) = "UDP Device IP Address"
 
 if fileExists(DefaultDir$, "Settings.txt") then 
 
@@ -32,7 +34,8 @@ if fileExists(DefaultDir$, "Settings.txt") then
         line input #PrinterSettings, printerPauseAfterJob$
         line input #PrinterSettings, SIZE.X$
         line input #PrinterSettings, SIZE.Y$
-        line input #PrinterSettings, SIZE.Z$      
+        line input #PrinterSettings, SIZE.Z$  
+        line input #PrinterSettings, UDP.IP.Adress$    
     close #PrinterSettings
     
     
@@ -54,7 +57,7 @@ printerPauseAfterJob$ = trim$(printerPauseAfterJob$)
 SIZE.X$               = trim$(SIZE.X$)
 SIZE.Y$               = trim$(SIZE.Y$)
 SIZE.Z$               = trim$(SIZE.Z$)
-
+UDP.IP.Adress$        = trim$(UDP.IP.Adress$)
 
 oncomerror [trap]
 
@@ -110,6 +113,7 @@ goto [terminal.connect]
 
 [quit.esp8266] 'End the program
     close #esp8266
+    close #winsock
     end
 
 
@@ -276,6 +280,12 @@ if left$(GcodeLineToSend$,10) = ";printpage" then
 end if
 
 
+if left$(GcodeLineToSend$,8) = ";udpsend" then
+    PRINT UDPsend(UDP.IP.Adress$, 12080,right$(GcodeLineToSend$, len(GcodeLineToSend$)-len(";udpsend ")))
+end if
+
+
+
 if left$(GcodeLineToSend$,1) = ";" then goto [send.the.goce.to.the.printer]
 if left$(GcodeLineToSend$,1) = "" then goto [send.the.goce.to.the.printer]
 
@@ -316,9 +326,10 @@ wait
     SettingsListValues$(8) = SIZE.X$
     SettingsListValues$(9) = SIZE.Y$
     SettingsListValues$(10) = SIZE.Z$
+    SettingsListValues$(11) = UDP.IP.Adress$
     
     
-    for x = 1 to 10
+    for x = 1 to 11
         if SettingsListValues$(x) = "" then SettingsListValues$(x) = "unset"
     
     next x
@@ -362,7 +373,7 @@ wait
     bla$ = savefile$("end.gcode", bla$)
 
     open "Settings.txt" for output as #PrinterSettings
-        for x = 1 to 10 
+        for x = 1 to 11 
             print #PrinterSettings, SettingsListValues$(x)
         next x
     close #PrinterSettings
@@ -526,6 +537,44 @@ function fileExists(path$, filename$)
 end function
 
 
+
+
+
+
+
+
+function UDPsend(addr$, port, msg$)
+    AF.INET = 2
+    SOCK.DGRAM = 2
+    IPPROTO.UDP = 17
+    UDPsend = 0
+    
+    port = (port and hexdec("FF00")) / 256 + (port and 255) * 256 ' swap bytes
+    calldll #winsock, "inet_addr", addr$ as ptr, ipaddr as ulong
+        
+    struct WSAdata, d as char[398]
+    calldll #winsock, "WSAStartup", 514 as long, WSAdata as struct, ret as long
+    if ret then exit function
+    
+    calldll #winsock, "socket", AF.INET as long, SOCK.DGRAM as long, _
+                      IPPROTO.UDP as long, socket as long
+    if socket = -1 then exit function
+    
+    struct addr, family as short, port as short, addr as ulong, zero as char[8]
+    addr.family.struct = AF.INET
+    addr.port.struct = port
+    addr.addr.struct = ipaddr
+
+    al = len(addr.struct)
+    ml = len(msg$)
+    calldll #winsock, "sendto", socket as long, msg$ as ptr, ml as long, _
+                      0 as long, addr as struct, al as long, sent as long
+
+    calldll #winsock, "closesocket", socket as long, ret as long
+    calldll #winsock, "WSACleanup", ret as long
+    
+    if sent = ml then UDPsend = 1
+end function 
 
 
 
