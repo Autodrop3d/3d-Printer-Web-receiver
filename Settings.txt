@@ -1,7 +1,10 @@
-2
+3
 250000
 KOSSEL
 PLA
 WHITE
 http://AUTODROP3D.COM/printerinterface/gcode
-false
+unset
+100
+100
+2

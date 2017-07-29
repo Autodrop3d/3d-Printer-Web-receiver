@@ -4,19 +4,21 @@
 dim info$(10, 10)
 
 
-dim SettingsList$(7)
-dim SettingsListValues$(7)
+dim SettingsList$(10)
+dim SettingsListValues$(10)
 
 
 
-SettingsList$(1) = "Com Port number"
-SettingsList$(2) = "Baud Speed"    
-SettingsList$(3) = "printer Name"
-SettingsList$(4) = "Material"
-SettingsList$(5) = "Color"
-SettingsList$(6) = "Server"
-SettingsList$(7) = "Pause After Print"
-
+SettingsList$(1)  = "Com Port number"
+SettingsList$(2)  = "Baud Speed"    
+SettingsList$(3)  = "printer Name"
+SettingsList$(4)  = "Material"
+SettingsList$(5)  = "Color"
+SettingsList$(6)  = "Server"
+SettingsList$(7)  = "Pause After Print"
+SettingsList$(8)  = "Size X"
+SettingsList$(9)  = "Size Y"
+SettingsList$(10) = "Size Z"
 
 if fileExists(DefaultDir$, "Settings.txt") then 
 
@@ -28,6 +30,9 @@ if fileExists(DefaultDir$, "Settings.txt") then
         line input #PrinterSettings, printerColor$  
         line input #PrinterSettings, printerServer$
         line input #PrinterSettings, printerPauseAfterJob$
+        line input #PrinterSettings, SIZE.X$
+        line input #PrinterSettings, SIZE.Y$
+        line input #PrinterSettings, SIZE.Z$      
     close #PrinterSettings
     
     
@@ -46,6 +51,9 @@ printerMaterial$      = trim$(printerMaterial$)
 printerColor$         = trim$(printerColor$)
 printerServer$        = trim$(printerServer$)
 printerPauseAfterJob$ = trim$(printerPauseAfterJob$)
+SIZE.X$               = trim$(SIZE.X$)
+SIZE.Y$               = trim$(SIZE.Y$)
+SIZE.Z$               = trim$(SIZE.Z$)
 
 
 oncomerror [trap]
@@ -154,7 +162,7 @@ wait
     timer 0
     if SendGcodeFlag = 1 then goto [loop]
     
-    print shell$("wget -O download.gcode ";chr$(34);printerServer$;"?name=";printerNamea$;"&Color=";printerColor$;"&material=";printerMaterial$;chr$(34))
+    print shell$("wget -O download.gcode ";chr$(34);printerServer$;"?name=";printerNamea$;"&Color=";printerColor$;"&material=";printerMaterial$;"&SizeX=";SIZE.X$;"&SizeY=";SIZE.Y$;"&SizeZ=";SIZE.Z$;chr$(34))
 
         open "download.gcode" for input as #mytemfile
             print #esp8266.te, "!contents #mytemfile";
@@ -305,8 +313,12 @@ wait
     SettingsListValues$(5) = printerColor$  
     SettingsListValues$(6) = printerServer$
     SettingsListValues$(7) = printerPauseAfterJob$
+    SettingsListValues$(8) = SIZE.X$
+    SettingsListValues$(9) = SIZE.Y$
+    SettingsListValues$(10) = SIZE.Z$
     
-    for x = 1 to 7
+    
+    for x = 1 to 10
         if SettingsListValues$(x) = "" then SettingsListValues$(x) = "unset"
     
     next x
@@ -350,7 +362,7 @@ wait
     bla$ = savefile$("end.gcode", bla$)
 
     open "Settings.txt" for output as #PrinterSettings
-        for x = 1 to 7
+        for x = 1 to 10 
             print #PrinterSettings, SettingsListValues$(x)
         next x
     close #PrinterSettings
