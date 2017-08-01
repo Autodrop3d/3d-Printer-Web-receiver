@@ -282,6 +282,8 @@ end if
 
 if left$(GcodeLineToSend$,8) = ";udpsend" then
     PRINT UDPsend(UDP.IP.Adress$, 12080,right$(GcodeLineToSend$, len(GcodeLineToSend$)-len(";udpsend ")))
+    PRINT UDPsend(UDP.IP.Adress$, 12080,right$(GcodeLineToSend$, len(GcodeLineToSend$)-len(";udpsend ")))
+    PRINT UDPsend(UDP.IP.Adress$, 12080,right$(GcodeLineToSend$, len(GcodeLineToSend$)-len(";udpsend ")))
 end if
 
 

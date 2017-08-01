@@ -1,46 +1,31 @@
 G28
 ;DOWN ALL THE WAY 
-G1 X55
-G1 Z55
+;udpsend down
 G4 P30000
-
+G28
 
 ;ALL THE WAY UP
-G1 Z100
-G1 X-55
-G1 Z63
+;udpsend up
 G4 P31000
+G28
 
 
 ;DOWN FOR THE PRINTER PAGE
-G1 Z100
-G1 X55
-G1 Z55
+
+;udpsend down
+
 G4 P5000
+G28
+
+;udpsend stop
+
 G28
 
 ;printpage
 
 ;ALL THE WAY UP
-G1 Z100
-G1 X-55
-G1 Z63
-G4 P31000
+;udpsend up
 G28
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
